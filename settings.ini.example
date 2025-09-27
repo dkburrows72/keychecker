@@ -1,0 +1,4 @@
+; Update this file and save as 'settings.ini'
+[keys]
+TAILSCALE_API_KEY = <<tailscale api key>>
+TAILNET_NAME = <<tailnet name>>
