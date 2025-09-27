@@ -20,8 +20,9 @@ def get_api_keys():
     return response.json()
 
 
-def check_expiration_and_notify(keys, days_threshold=365):
+def check_expiration_and_notify(keys, days_threshold=7):
     for key in keys:
+        keytype = key.get("keyType")
         expiry_date_str = key.get("expires")  # Assuming 'expiresAt' field
         if expiry_date_str:
             expiry_date = datetime.datetime.fromisoformat(
@@ -30,13 +31,14 @@ def check_expiration_and_notify(keys, days_threshold=365):
             time_until_expiry = expiry_date - datetime.datetime.now(
                 datetime.timezone.utc
             )
-
+            
+            log = {"WARNING": f"Tailscale_{keytype}_key_'{key.get('id')}'_expires_in_{time_until_expiry.days}_days."}
+            
             if time_until_expiry.days <= days_threshold:
-                print(
-                    f"WARNING: Tailscale API key '{key.get('id')}' expires in {time_until_expiry.days} days."
-                )
-                # Implement your notification logic here (e.g., send email, Slack message)
-
+                status = 1    # Fail 
+            else:
+                status = 0    # Pass
+            requests.post(f"https://hc-ping.com/1ae34f92-7d0b-4177-b2a9-3534174a92bc/{status}", timeout=10, data=log)
 
 if __name__ == "__main__":
     api_keys = get_api_keys()
